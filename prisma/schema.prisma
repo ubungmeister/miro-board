@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
+}
+
+model User {
+  id        String   @id @default(uuid())
+  boards    Board[]  @relation("CreatedBoards")
+  notes     Note[]   @relation("CreatedNotes")
+}
+
+// Board model (represents a canvas or whiteboard)
+// Each board belongs to a user and can contain multiple notes
+model Board {
+  id         String    @id @default(uuid())
+  title      String
+  createdAt  DateTime  @default(now())
+  createdBy  String
+  notes      Note[]
+
+  user       User      @relation(fields: [createdBy], references: [id], name: "CreatedBoards", onDelete: Cascade)
+
+  @@index([createdBy]) // Index for faster queries when filtering by creator
+}
+
+// Note model (individual sticky notes)
+// Each note belongs to a board and a user
+model Note {
+  id         String    @id @default(uuid())
+  content    String
+  posX       Float     @default(0)
+  posY       Float     @default(0)
+  color      String    @default("#FFF9B1")
+  createdAt  DateTime  @default(now())
+  createdBy  String
+  boardId    String
+
+  board      Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [createdBy], references: [id], name: "CreatedNotes", onDelete: Cascade)
+
+  @@index([boardId])   // Index for faster queries when filtering by board
+  @@index([createdBy]) // Index for faster queries when filtering by creator
+}
