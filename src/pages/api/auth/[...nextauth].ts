@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 
 // Extend session to include user.id
 declare module 'next-auth' {
-  interface Session extends DefaultSession {
+  export interface Session extends DefaultSession {
     user: {
       id: string;
     } & DefaultSession['user'];
@@ -21,7 +21,7 @@ export const authOptions: AuthOptions = {
   debug: true,
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: 'database', // ✅ Tell NextAuth to use Prisma DB sessions
+    strategy: 'jwt',
   },
   providers: [
     CredentialsProvider({
