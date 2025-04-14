@@ -1,5 +1,7 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
+
 import { useGetBoardsQuery, useDeleteBoardMutation } from '@/features/boards/boardsApi';
 export const BoardsList = () => {
   const { data: dashboards, isLoading, error } = useGetBoardsQuery();
@@ -28,10 +30,19 @@ export const BoardsList = () => {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {dashboards?.map((dashboard) => (
-        <div key={dashboard.id} className="border p-4 rounded shadow flex justify-between">
-          <h2 className="text-lg font-bold">{dashboard.title}</h2>
-          <button onClick={(e) => handleDelete({ e, boardId: dashboard.id })}>X</button>
-        </div>
+        <Link key={dashboard.id} href={`/dashboard/${dashboard.id}`}>
+          <div className="border p-4 rounded shadow flex justify-between cursor-pointer hover:bg-gray-100">
+            <h2 className="text-lg font-bold">{dashboard.title}</h2>
+            <button
+              onClick={(e) => {
+                e.preventDefault(); // Prevent navigating on delete
+                handleDelete({ e, boardId: dashboard.id });
+              }}
+            >
+              X
+            </button>
+          </div>
+        </Link>
       ))}
     </div>
   );
