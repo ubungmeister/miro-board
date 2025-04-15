@@ -35,7 +35,6 @@ export const BoardsList = () => {
             <h2 className="text-lg font-bold">{dashboard.title}</h2>
             <button
               onClick={(e) => {
-                e.preventDefault(); // Prevent navigating on delete
                 handleDelete({ e, boardId: dashboard.id });
               }}
             >
