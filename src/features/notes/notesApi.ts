@@ -59,10 +59,36 @@ export const notesApi = createApi({
         }
       },
     }),
-    updateNote: builder.mutation<Note, Partial<Note>>({
-      query: (note) => ({ url: `notes/${note.id}`, method: 'PUT', body: note }),
+    updateNote: builder.mutation<Note, { id: string; content?: string; boardId: string }>({
+      query: (note) => ({
+        url: `notes/${note.id}`,
+        method: 'PUT',
+        body: note,
+      }),
       invalidatesTags: (result, error, note) => [{ type: 'Note', id: note.id }],
+
+      // Optimistic update to update cache immediately before server confirms
+      async onQueryStarted(updatedNote, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          notesApi.util.updateQueryData('getNotes', updatedNote.boardId, (draft) => {
+            const index = draft.findIndex((note) => note.id === updatedNote.id);
+            if (index !== -1) {
+              draft[index] = {
+                ...draft[index],
+                ...updatedNote, // Apply optimistic changes
+              };
+            }
+          })
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
+
     deleteNote: builder.mutation<void, { id: string; boardId: string }>({
       query: ({ id, boardId }) => ({
         url: `notes/${id}?boardId=${boardId}`,
@@ -91,4 +117,9 @@ export const notesApi = createApi({
   }),
 });
 
-export const { useCreateNoteMutation, useDeleteNoteMutation, useGetNotesQuery } = notesApi;
+export const {
+  useCreateNoteMutation,
+  useDeleteNoteMutation,
+  useGetNotesQuery,
+  useUpdateNoteMutation,
+} = notesApi;
