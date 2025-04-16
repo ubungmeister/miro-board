@@ -18,7 +18,6 @@ export const BoardsList = () => {
     boardId: string;
   }) => {
     e.preventDefault();
-    console.log('Deleting board with ID:', boardId);
     try {
       await deleteBoard(boardId).unwrap();
       console.log('Deleted board with ID:', boardId);

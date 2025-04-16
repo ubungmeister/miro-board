@@ -22,7 +22,6 @@ export const BoardForm = () => {
   });
 
   const onSubmit: SubmitHandler<DashboardDataType> = async (data) => {
-    console.log('Form submitted:', data);
     try {
       const response = await createBoard({ title: data.text }).unwrap();
       console.log('Created new board:', response);
