@@ -7,16 +7,9 @@ type NoteListProps = {
 };
 
 export const NoteList = ({ boardId }: NoteListProps) => {
-  const { data: notes, isLoading } = useGetNotesQuery(boardId);
-  if (isLoading) return <div>Loading...</div>;
+  const { data: notes } = useGetNotesQuery(boardId);
 
   console.log('notes', notes);
 
-  return (
-    <>
-      {notes?.map((note) => {
-        return <NoteItem key={note.id} note={note} boardId={boardId} />;
-      })}
-    </>
-  );
+  return <>{notes?.map((note) => <NoteItem key={note.id} note={note} boardId={boardId} />)}</>;
 };

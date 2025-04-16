@@ -80,24 +80,27 @@ async function handleDelete(req: NextApiRequest, res: NextApiResponse, userId: s
 }
 
 async function handlePut(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { content } = req.body;
-  // Validate request body
+  const { content, posX, posY } = req.body;
+
+  // Validate request with boardId from body
   const validation = await validateNoteAccess(req, userId, true);
 
   if ('error' in validation) {
     return res.status(validation.error.status).json({ message: validation.error.message });
   }
 
-  // get the note from the validation result
-  // if the note is not found, return 404
   const { note } = validation;
   if (!note) {
-    return { error: { status: 404, message: 'Note not found' } };
+    return res.status(404).json({ message: 'Note not found' });
   }
 
   const updated = await prisma.note.update({
     where: { id: note.id },
-    data: { content },
+    data: {
+      ...(content !== undefined && { content }),
+      ...(posX !== undefined && { posX }),
+      ...(posY !== undefined && { posY }),
+    },
   });
 
   return res.status(200).json(updated);
