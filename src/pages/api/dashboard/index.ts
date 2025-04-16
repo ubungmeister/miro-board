@@ -15,11 +15,9 @@ interface Session extends DefaultSession {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const session = await getServerSession(req, res, authOptions);
-    console.log('session', session);
     if (!session) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    console.log('Method', req.method);
     switch (req.method) {
       case 'POST':
         return await handlePost(req, res, session);

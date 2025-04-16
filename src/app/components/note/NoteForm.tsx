@@ -26,7 +26,6 @@ export const NoteForm = ({boardId}:NoteFormProps) => {
   });
 
   const onSubmit: SubmitHandler<DashboardDataType> = async (data) => {
-    console.log('Form submitted:', data);
     try {
       const response = await createNote({ content: data.text, boardId:boardId }).unwrap();
       console.log('Created new board:', response);
