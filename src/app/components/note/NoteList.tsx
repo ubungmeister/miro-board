@@ -21,7 +21,7 @@ export const NoteList = ({ boardId }: NoteListProps) => {
   const handleResizeEnd = () => {
     setResizingNoteId(null);
   };
-  
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { delta, active } = event;
     const note = notes?.find((n) => n.id === active.id);

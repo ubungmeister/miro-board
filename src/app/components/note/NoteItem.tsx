@@ -24,7 +24,7 @@ export const NoteItem = ({
 }: NoteItemProps) => {
   const [deleteNote] = useDeleteNoteMutation();
   const [updateNote] = useUpdateNoteMutation();
-  const [text, setText] = useState('');
+  const [text, setText] = useState(note.content);
   const [isEditing, setIsEditing] = useState(false);
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -61,7 +61,6 @@ export const NoteItem = ({
         zIndex: 10,
       }}
       {...attributes}
-      {...listeners}
     >
       <Resizable
         defaultSize={{
@@ -71,8 +70,14 @@ export const NoteItem = ({
         onResizeStart={() => onResizeStart(note.id)}
         onResizeStop={handleResizeStop}
         enable={{ bottomRight: true }}
-        className="bg-yellow-200 shadow-lg rounded-md p-3 cursor-move"
+        className="bg-yellow-200 shadow-lg rounded-md relative"
       >
+        <div
+          {...listeners}
+          className="cursor-move w-full h-5  rounded-t-md mb-1"
+          onMouseDown={(e) => e.stopPropagation()} // prevent textarea drag conflicts
+        />
+
         {isEditing ? (
           <textarea
             value={text}
@@ -84,7 +89,7 @@ export const NoteItem = ({
               }
               setIsEditing(false);
             }}
-            className="w-full h-full bg-yellow-100 p-2 rounded resize-none outline-none text-black"
+            className="w-full h-full  p-2 rounded resize-none outline-none text-black"
           />
         ) : (
           <p
@@ -94,6 +99,7 @@ export const NoteItem = ({
             {note.content}
           </p>
         )}
+
         <button
           onClick={handleDelete}
           className="absolute cursor-pointer text-2xl top-1 right-1 text-red-600 font-bold"
