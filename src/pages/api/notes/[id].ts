@@ -80,7 +80,9 @@ async function handleDelete(req: NextApiRequest, res: NextApiResponse, userId: s
 }
 
 async function handlePut(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { content, posX, posY } = req.body;
+  const { content, posX, posY, height, width } = req.body;
+
+  console.log('req.body', req.body);
 
   // Validate request with boardId from body
   const validation = await validateNoteAccess(req, userId, true);
@@ -100,6 +102,8 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse, userId: stri
       ...(content !== undefined && { content }),
       ...(posX !== undefined && { posX }),
       ...(posY !== undefined && { posY }),
+      ...(height !== undefined && { height }),
+      ...(width !== undefined && { width }),
     },
   });
 

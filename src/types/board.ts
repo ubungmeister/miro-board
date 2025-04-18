@@ -7,13 +7,14 @@ export interface Board {
 }
 
 export interface Note {
-    id: string;
-    content: string;
-    posX: number;
-    posY: number;
-    color: string;
-    createdAt: Date;
-    createdBy: string;  
-    boardId: string;
-  }
-  
+  id: string;
+  content: string;
+  posX: number;
+  posY: number;
+  width: number;
+  height: number;
+  color: string;
+  createdAt: Date;
+  createdBy: string;
+  boardId: string;
+}

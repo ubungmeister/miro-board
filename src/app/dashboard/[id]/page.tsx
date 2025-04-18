@@ -14,8 +14,6 @@ export default function BoardPage() {
       await createNote({
         content: 'New Note',
         boardId,
-        // posX: 20,
-        // posY: 20,
         color: 'yellow',
       }).unwrap();
     } catch (error) {
