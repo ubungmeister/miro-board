@@ -1,100 +1,106 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import Draggable, { DraggableEvent } from 'react-draggable';
+import React, { useState } from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
+import { Resizable } from 're-resizable';
 import { Note } from '@/types/board';
 import { useDeleteNoteMutation, useUpdateNoteMutation } from '@/features/notes/notesApi';
-import { DraggableWrapper } from './DraggableWrapper';
 
-type NoteItemProps = {
+interface NoteItemProps {
   note: Note;
   boardId: string;
-};
+  isResizing: boolean;
+  onResizeStart: (id: string) => void;
+  onResizeEnd: () => void;
+}
 
-export const NoteItem = ({ note, boardId }: NoteItemProps) => {
+export const NoteItem = ({
+  note,
+  boardId,
+  isResizing,
+  onResizeStart,
+  onResizeEnd,
+}: NoteItemProps) => {
   const [deleteNote] = useDeleteNoteMutation();
   const [updateNote] = useUpdateNoteMutation();
-  const [text, setText] = useState(note.content);
+  const [text, setText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const nodeRef = useRef<HTMLDivElement | null>(null);
 
-  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    try {
-      await deleteNote({ id: note.id, boardId }).unwrap();
-    } catch (error) {
-      console.error('Error deleting note:', error);
-    }
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: note.id,
+    disabled: isResizing,
+  });
+
+  const handleDelete = async () => {
+    await deleteNote({ id: note.id, boardId });
   };
 
-  const handleToggleEditing = () => {
-    setIsEditing((prev) => !prev);
+  const handleResizeStop = (_e: any, _dir: any, ref: HTMLElement) => {
+    const newWidth = ref.offsetWidth;
+    const newHeight = ref.offsetHeight;
+    updateNote({ id: note.id, boardId, width: newWidth, height: newHeight });
+    onResizeEnd();
   };
 
-  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && text.trim()) {
       updateNote({ id: note.id, content: text, boardId });
       setIsEditing(false);
     }
   };
 
-  const handleOnBlur = () => {
-    if (text !== note.content && text.trim()) {
-      updateNote({ id: note.id, content: text, boardId });
-    } else {
-      setText(note.content);
-    }
-    setIsEditing(false);
-  };
-
-  const handleDragStop = (e: DraggableEvent, data: { x: number; y: number }) => {
-    updateNote({
-      id: note.id,
-      boardId,
-      posX: data.x,
-      posY: data.y,
-    });
-  };
-
   return (
-    <Draggable
-      defaultPosition={{ x: note.posX, y: note.posY }}
-      onStop={handleDragStop}
-      nodeRef={nodeRef as React.RefObject<HTMLElement>}
+    <div
+      ref={setNodeRef}
+      style={{
+        position: 'absolute',
+        left: note.posX,
+        top: note.posY,
+        transform: CSS.Translate.toString(transform),
+        zIndex: 10,
+      }}
+      {...attributes}
+      {...listeners}
     >
-      <DraggableWrapper
-        ref={nodeRef}
-        className="absolute border p-4 rounded shadow bg-white w-64 cursor-move z-40"
-        // style={{ zIndex: 100 }}
+      <Resizable
+        defaultSize={{
+          width: note.width || 200,
+          height: note.height || 150,
+        }}
+        onResizeStart={() => onResizeStart(note.id)}
+        onResizeStop={handleResizeStop}
+        enable={{ bottomRight: true }}
+        className="bg-yellow-200 shadow-lg rounded-md p-3 cursor-move"
       >
-        <div key={note.id} className="border p-4 rounded shadow mb-4 flex justify-between ">
-          <div>
-            {isEditing ? (
-              <input
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onBlur={handleOnBlur}
-                autoFocus
-                onKeyDown={handleTextKeyDown}
-                className="border p-2 rounded"
-              />
-            ) : (
-              <p onDoubleClick={handleToggleEditing} className="text-lg font-bold">
-                {note.content}
-              </p>
-            )}
-            <p>
-              Position: ({note.posX}, {note.posY})
-            </p>
-            <p>Color: {note.color}</p>
-            <p>Created At: {new Date(note.createdAt).toLocaleString()}</p>
-          </div>
-          <button onClick={(e) => handleDelete(e)} className="text-red-500 font-bold ml-2">
-            ×
-          </button>
-        </div>
-      </DraggableWrapper>
-    </Draggable>
+        {isEditing ? (
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleTextKeyDown}
+            onBlur={() => {
+              if (text !== note.content) {
+                updateNote({ id: note.id, content: text, boardId });
+              }
+              setIsEditing(false);
+            }}
+            className="w-full h-full bg-yellow-100 p-2 rounded resize-none outline-none text-black"
+          />
+        ) : (
+          <p
+            onDoubleClick={() => setIsEditing(true)}
+            className="text-black break-words whitespace-pre-wrap w-full h-full"
+          >
+            {note.content}
+          </p>
+        )}
+        <button
+          onClick={handleDelete}
+          className="absolute cursor-pointer text-2xl top-1 right-1 text-red-600 font-bold"
+        >
+          ×
+        </button>
+      </Resizable>
+    </div>
   );
 };

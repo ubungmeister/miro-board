@@ -59,7 +59,18 @@ export const notesApi = createApi({
         }
       },
     }),
-    updateNote: builder.mutation<Note, { id: string; content?: string; boardId: string, posX?:number, posY?:number}>({
+    updateNote: builder.mutation<
+      Note,
+      {
+        id: string;
+        content?: string;
+        boardId: string;
+        posX?: number;
+        posY?: number;
+        width?: number;
+        height?: number;
+      }
+    >({
       query: (note) => ({
         url: `notes/${note.id}`,
         method: 'PUT',

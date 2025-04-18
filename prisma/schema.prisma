@@ -77,6 +77,8 @@ model Note {
   content    String
   posX       Float     @default(0)
   posY       Float     @default(0)
+  width      Float?    @default(200) 
+  height     Float?    @default(150)  
   color      String    @default("#FFF9B1")
   createdAt  DateTime  @default(now())
   createdBy  String
